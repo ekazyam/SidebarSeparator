@@ -1,4 +1,4 @@
-Add Separater Filein Open Files List
+Add Separater File in Open Files List
 =====================================================
 Add an empty file to open files list .
 It'll add a hyphen in the standard .
