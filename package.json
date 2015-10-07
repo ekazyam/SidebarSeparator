@@ -1,0 +1,10 @@
+{
+    "name": "AddSeparate",
+    "details": "https://github.com/ekazyam/AddSeparate",
+    "releases": [
+        {
+            "sublime_text": "*",
+            "details": "https://github.com/ekazyam/AddSeparate/stalable"
+        }
+    ]
+}
