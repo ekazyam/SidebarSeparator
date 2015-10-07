@@ -1,0 +1,16 @@
+{
+    "schema_version": "1.0.0",
+    "packages": [
+        {
+            "name": "AddSeparate",
+            "details": "https://github.com/ekazyam/SublimeText3/tree/master/Plugins/AddSeparate",
+            "releases": [
+                {
+                    "sublime_text": "*",
+                    "platforms": "windows",
+                    "details": "https://github.com/ekazyam/SublimeText3/tree/master/Plugins/AddSeparate"
+                }
+            ]
+        }
+    ]
+}
