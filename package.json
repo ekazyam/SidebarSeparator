@@ -3,7 +3,8 @@
     "details": "https://github.com/ekazyam/AddSeparate",
     "releases": [
         {
-            "sublime_text": "*",
+            "platforms": "windows",
+            "sublime_text": ">2999",
             "details": "https://github.com/ekazyam/AddSeparate#stalable"
         }
     ]
