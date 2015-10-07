@@ -1,1 +1,1 @@
-{"url": "https://github.com/ekazyam/AddSeparate", "description": "Add Separater to Side Bar for Sublime Text 3\n", "platforms": ["windows"], "version": "1.0.0", "dependencies": [], "sublime_text": "*"}
+{"url": "https://github.com/ekazyam/AddSeparate", "description": "Add Separater to Side Bar for Sublime Text 3\n", "platforms": ["*"], "version": "1.0.0", "dependencies": [], "sublime_text": "*"}
