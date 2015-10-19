@@ -4,11 +4,8 @@ import sublime_plugin
 
 class SidebarSeparator(sublime_plugin.TextCommand):
 
-    def run(self, edit):
-        # set writing point at separate file.
-        start_point = 0
-
-        # get settign values from setting file.
+    def run(self,edit):
+        # get setting values from setting file.
         setting_values = self.GetSettingValues()
 
         # set separate data.
@@ -17,11 +14,11 @@ class SidebarSeparator(sublime_plugin.TextCommand):
         # create separate file.
         separate_file = sublime.active_window().new_file()
 
+        # set buffer name.
+        separate_file.set_name(separate_value)
+
         # set not save as separate file propertie.
         separate_file.set_scratch(True)
-
-        # write separate data in dummy file.
-        separate_file.insert(edit, start_point, separate_value)
 
         # set read only propertie.
         separate_file.set_read_only(True)
