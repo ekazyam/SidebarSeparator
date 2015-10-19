@@ -2,7 +2,7 @@
 	{
 		"id": "add_separate",
 		"caption": "Add Separate",
-		"command": "add_separate"
+		"command": "sidebar_separator"
 	}
 ]
 

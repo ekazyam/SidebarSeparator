@@ -1,6 +1,6 @@
 [
 { 
 	"keys": ["ctrl+shift+s"],
-	"command": "add_separate",
+	"command": "sidebar_separator",
 }
 ]
