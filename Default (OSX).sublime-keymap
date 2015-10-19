@@ -1,6 +1,6 @@
 [
-{ 
-	"keys": ["ctrl+shift+s"],
-	"command": "sidebar_separator",
-}
+	{ 
+		"keys": ["ctrl+shift+s"],
+		"command": "sidebar_separator",
+	}
 ]
