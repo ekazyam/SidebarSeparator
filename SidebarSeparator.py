@@ -23,11 +23,15 @@ class SidebarSeparator(sublime_plugin.TextCommand):
         # write separate data in dummy file.
         separate_file.insert(edit, start_point, separate_value)
 
+        # set read only propertie.
+        separate_file.set_read_only(True)
+
     def GetSettingValues(self):
         # get separate value from setting file.
         setting_values = {}
         try:
-            settings = sublime.load_settings('SidebarSeparator.sublime-settings')
+            settings = sublime.load_settings(
+                'SidebarSeparator.sublime-settings')
             setting_values["separate_value"] = settings.get(
                 'separate_value', '-')
             setting_values["separate_count"] = settings.get(
