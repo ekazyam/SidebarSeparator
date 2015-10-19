@@ -1,7 +1,7 @@
 [
 	{
 		"id": "add_separate",
-		"caption": "Add Separate",
+		"caption": "Add Separator",
 		"command": "sidebar_separator"
 	}
 ]
