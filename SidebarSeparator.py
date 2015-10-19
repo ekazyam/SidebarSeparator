@@ -2,7 +2,7 @@ import sublime
 import sublime_plugin
 
 
-class AddSeparate(sublime_plugin.TextCommand):
+class SidebarSeparator(sublime_plugin.TextCommand):
 
     def run(self, edit):
         # set writing point at separate file.
@@ -27,7 +27,7 @@ class AddSeparate(sublime_plugin.TextCommand):
         # get separate value from setting file.
         setting_values = {}
         try:
-            settings = sublime.load_settings('AddSeparate.sublime-settings')
+            settings = sublime.load_settings('SidebarSeparator.sublime-settings')
             setting_values["separate_value"] = settings.get(
                 'separate_value', '-')
             setting_values["separate_count"] = settings.get(
