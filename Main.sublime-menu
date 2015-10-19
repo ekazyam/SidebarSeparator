@@ -12,12 +12,12 @@
                 "children":
                 [
                     {
-                        "caption": "AddSeparate",
+                        "caption": "SidebarSeparator",
                         "children":
                         [
                             {
                                 "command": "open_file", 
-                                "args": {"file": "${packages}/AddSeparate/AddSeparate.sublime-settings"},
+                                "args": {"file": "${packages}/SidebarSeparator/SidebarSeparator.sublime-settings"},
                                 "caption": "Settings – Default"
                             },
                             {
