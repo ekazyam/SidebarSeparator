@@ -24,4 +24,4 @@ separate_count indicates the number of separate characters .
 
 License
 ====
-This software is released under the MIT License, see LICENSE.txt.
+This software is released under the MIT License, see LICENSE.
