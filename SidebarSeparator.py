@@ -3,21 +3,69 @@ import sublime_plugin
 import json
 import os.path
 import sys
-import re
+from sublime_plugin import EventListener
+
+TOGGLE_TABS = 'toggle_tabs'
 
 
-class SidebarSeparator(sublime_plugin.TextCommand):
+class Listener(EventListener):
 
+    def on_window_command(self, window, command, option):
+        # toggle_tabs command except it does not control.
+        if(command != TOGGLE_TABS):
+            return
+
+        if(option == 'hide_tabs' and TabStatusContainer.getTabCloseFlag() == True):
+            # set tab hide flag.
+            TabStatusContainer.setShowTabStatus(False)
+        elif(TabStatusContainer.getTabCloseFlag() == False):
+            # set tab show/hide flag.
+            TabStatusContainer.setShowTabStatus(
+                not TabStatusContainer.getShowTabStatus())
+        else:
+            # force disable disable the tab control of the menu.
+            return ('None')
+
+
+class TabStatusContainer():
     # show_tabs parameter from Session.sublime_session.
-    show_tab_status = None
+    _show_tab_status = {}
+
+    # auto tab closing flag.
+    _tab_close_flag = None
+
+    @staticmethod
+    def getActiveWindowId():
+        return sublime.active_window().id()
 
     @staticmethod
     def getShowTabStatus():
-        return SidebarSeparator.show_tab_status
+        # get active window_id
+        window_id = TabStatusContainer.getActiveWindowId()
+
+        if(not window_id in TabStatusContainer._show_tab_status):
+            TabStatusContainer._show_tab_status[window_id] = None
+
+        return TabStatusContainer._show_tab_status[window_id]
 
     @staticmethod
     def setShowTabStatus(status):
-        SidebarSeparator.show_tab_status = status
+        # get active window_id
+        window_id = TabStatusContainer.getActiveWindowId()
+
+        # set show_tab_status.
+        TabStatusContainer._show_tab_status[window_id] = status
+
+    @staticmethod
+    def setTabCloseFlag(flag):
+        TabStatusContainer._tab_close_flag = flag
+
+    @staticmethod
+    def getTabCloseFlag():
+        return TabStatusContainer._tab_close_flag
+
+
+class SidebarSeparator(sublime_plugin.TextCommand):
 
     def run(self, edit):
         # get setting values from setting file.
@@ -38,15 +86,26 @@ class SidebarSeparator(sublime_plugin.TextCommand):
         # set read only propertie.
         separate_file.set_read_only(True)
 
-        # hide tabbar.
+        # set auto tab closing flag.
+        TabStatusContainer.setTabCloseFlag(setting_values['auto_tab_hide'])
+
+        # check auto hide option.
+        if(TabStatusContainer.getTabCloseFlag() != True):
+            return
+
+        # execute hide tabs.
         self.hideTabBar(setting_values)
 
     def getSettingValues(self):
-        # get separate value from setting file.
+
+        # config files(user)
+        config_file = 'sidebar_separator.sublime-settings'
+
+        # get config value from setting file.
         setting_values = {}
         try:
-            settings = sublime.load_settings(
-                'SidebarSeparator.sublime-settings')
+            settings = sublime.load_settings(config_file)
+
             setting_values["separate_value"] = settings.get(
                 'separate_value', '-')
             setting_values["separate_count"] = settings.get(
@@ -72,33 +131,25 @@ class SidebarSeparator(sublime_plugin.TextCommand):
         return setting_data['windows'][0]['show_tabs']
 
     def hideTabBar(self, setting_values):
-        # check auto_hide_tab parameter.
-        if(setting_values['auto_tab_hide'] != True):
-            return
-
-        # to make sure that it is not set in global parameter.
-        if (SidebarSeparator.getShowTabStatus() is None):
+        # check show_tabs parameter at global.
+        if (TabStatusContainer.getShowTabStatus() is None):
 
             # set show_tabs parameter from Session.sublime_session.
-            SidebarSeparator.setShowTabStatus(self.getJsonParameter())
+            TabStatusContainer.setShowTabStatus(self.getJsonParameter())
 
-        # check show_tabs parameter at global.
-        if (SidebarSeparator.getShowTabStatus() == True):
-
-            # set show_tab_status at static values.
-            SidebarSeparator.setShowTabStatus(False)
-
+        if(TabStatusContainer.getShowTabStatus() == True):
             # hide tabbar.
-            sublime.active_window().run_command('toggle_tabs')
+            sublime.active_window().run_command(TOGGLE_TABS, 'hide_tabs')
 
     def checkSettingFileExists(self):
         # set path of setting file.
-        path = re.sub(r'Packages$', '', sublime.packages_path())
+        path = sublime.packages_path().replace('Packages', '')
         if(sublime.platform() == 'windows'):
             # for windows.
             setting_files = (path + '\Local\Auto Save Session.sublime_session',
                              path + '\Local\Session.sublime_session')
         else:
+
             # for mac/linux.
             setting_files = (path + '/Local/Auto Save Session.sublime_session',
                              path + '/Local/Session.sublime_session')
