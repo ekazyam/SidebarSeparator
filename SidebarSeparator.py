@@ -93,6 +93,10 @@ class SidebarSeparator(sublime_plugin.TextCommand):
         if(TabStatusContainer.getTabCloseFlag() != True):
             return
 
+        # to determine the need for command execution
+        if(self.checkShowTabStatus() != True):
+            return
+
         # execute hide tabs.
         self.hideTabBar(setting_values)
 
@@ -130,7 +134,7 @@ class SidebarSeparator(sublime_plugin.TextCommand):
 
         return setting_data['windows'][0]['show_tabs']
 
-    def hideTabBar(self, setting_values):
+    def checkShowTabStatus(self):
         # check show_tabs parameter at global.
         if (TabStatusContainer.getShowTabStatus() is None):
 
@@ -138,8 +142,13 @@ class SidebarSeparator(sublime_plugin.TextCommand):
             TabStatusContainer.setShowTabStatus(self.getJsonParameter())
 
         if(TabStatusContainer.getShowTabStatus() == True):
-            # hide tabbar.
-            sublime.active_window().run_command(TOGGLE_TABS, 'hide_tabs')
+            return True
+        else:
+            return False
+
+    def hideTabBar(self, setting_values):
+        # hide tabbar.
+        sublime.active_window().run_command(TOGGLE_TABS, 'hide_tabs')
 
     def checkSettingFileExists(self):
         # set path of setting file.
