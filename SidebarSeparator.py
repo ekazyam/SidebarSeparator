@@ -15,19 +15,19 @@ class Listener(EventListener):
         if(command != TOGGLE_TABS):
             return
 
-        if(option == 'hide_tabs' and TabStatusContainer.getTabCloseFlag() == True):
+        if(option == 'hide_tabs' and TabStatusStore.getTabCloseFlag()):
             # set tab hide flag.
-            TabStatusContainer.setShowTabStatus(False)
-        elif(TabStatusContainer.getTabCloseFlag() == False):
+            TabStatusStore.setShowTabStatus(False)
+        elif(not TabStatusStore.getTabCloseFlag()):
             # set tab show/hide flag.
-            TabStatusContainer.setShowTabStatus(
-                not TabStatusContainer.getShowTabStatus())
+            TabStatusStore.setShowTabStatus(
+                not TabStatusStore.getShowTabStatus())
         else:
             # force disable disable the tab control of the menu.
             return ('None')
 
 
-class TabStatusContainer():
+class TabStatusStore():
     # show_tabs parameter from Session.sublime_session.
     _show_tab_status = {}
 
@@ -87,14 +87,14 @@ class SidebarSeparator(sublime_plugin.TextCommand):
         separate_file.set_read_only(True)
 
         # set auto tab closing flag.
-        TabStatusContainer.setTabCloseFlag(setting_values['auto_tab_hide'])
+        TabStatusStore.setTabCloseFlag(setting_values['auto_tab_hide'])
 
         # check auto hide option.
-        if(TabStatusContainer.getTabCloseFlag() != True):
+        if(not TabStatusStore.getTabCloseFlag()):
             return
 
         # to determine the need for command execution
-        if(self.checkShowTabStatus() != True):
+        if(not self.checkShowTabStatus()):
             return
 
         # execute hide tabs.
@@ -136,15 +136,12 @@ class SidebarSeparator(sublime_plugin.TextCommand):
 
     def checkShowTabStatus(self):
         # check show_tabs parameter at global.
-        if (TabStatusContainer.getShowTabStatus() is None):
+        if (TabStatusStore.getShowTabStatus() is None):
 
             # set show_tabs parameter from Session.sublime_session.
-            TabStatusContainer.setShowTabStatus(self.getJsonParameter())
+            TabStatusStore.setShowTabStatus(self.getJsonParameter())
 
-        if(TabStatusContainer.getShowTabStatus() == True):
-            return True
-        else:
-            return False
+        return TabStatusStore.getShowTabStatus()
 
     def hideTabBar(self, setting_values):
         # hide tabbar.
