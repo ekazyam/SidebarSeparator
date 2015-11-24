@@ -1,8 +1,8 @@
 import sublime
-import sublime_plugin
 import json
 import os.path
 import sys
+from sublime_plugin import TextCommand
 from sublime_plugin import EventListener
 
 TOGGLE_TABS = 'toggle_tabs'
@@ -65,7 +65,7 @@ class TabStatusStore():
         store._tab_close_flag = flag
 
 
-class SidebarSeparator(sublime_plugin.TextCommand):
+class SidebarSeparator(TextCommand):
 
     def run(self, edit):
         # get setting values from setting file.
