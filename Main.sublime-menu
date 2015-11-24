@@ -21,8 +21,8 @@
                                 "caption": "Settings – Default"
                             },
                             {
-                                "command": "open_file", 
-                                "args": {"file": "${packages}/User/Preferences.sublime-settings"},
+                                "command": "open_file",
+                                "args": {"file": "${packages}/User/sidebar_separator.sublime-settings"},
                                 "caption": "Settings – User"
                             },
                             { "caption": "-" }

@@ -18,6 +18,9 @@ separate_count indicates the number of separate characters.
 {
    "separate_value": "-",
    "separate_count": 100,
+   
+   // Forced hidden if tab that specifies the true.
+   "auto_tab_hide": true,
 }
 
 ~~~
