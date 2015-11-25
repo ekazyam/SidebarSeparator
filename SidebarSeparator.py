@@ -25,7 +25,7 @@ def _update_config():
 
     def _load_config():
 
-        def _parse_json(self, config_file):
+        def _parse_json(config_file):
             # parse json from config file.
             opened_file = open(config_file, 'r', encoding="utf8")
             return json.loads(opened_file.read(), strict=False)
@@ -134,4 +134,4 @@ class SidebarSeparator(TextCommand):
 
         # controlling the tabs when the flag is true.
         if(get_auto_hide_option()):
-            sublime.active_window().run_command('toggle_tabs', 'this_plugin')
+            sublime.active_window().run_command('toggle_tabs', 'sidebar_separator')
