@@ -57,6 +57,8 @@ def _update_config():
     if(config is None):
         config = _load_config()
 
+    TabStatusStore.set_show_tab_status(get_tab_visibility_option())
+
 
 def _update_settings():
 
@@ -101,9 +103,61 @@ def get_tab_visibility_option():
 class Listener(EventListener):
 
     def on_window_command(self, window, command, option):
+
         # toggle_tabs command except it does not control.
         print('コマンド：', command, '/オプション：', option,
-              '/ウインドウ：', window, '/セルフ：', self)
+              '/ウインドウ：', window, '/開閉状態：', TabStatusStore.get_show_tab_status())
+
+        # toggle_tabs command except it does not control.
+        if(command != 'toggle_tabs'):
+            return
+
+        if(option == 'sidebar_separator' and get_auto_hide_option() and TabStatusStore.get_show_tab_status()):
+
+            # set tab hide flag.
+            TabStatusStore.set_show_tab_status(False)
+        # toggle version.
+        # elif(not get_auto_hide_option()):
+
+            # toggle show/hide flag.
+            # TabStatusStore.set_show_tab_status(
+            # TabStatusStore.toggle_show_tab_status())
+        # force hide tab version.
+        elif(get_auto_hide_option()):
+            return ('None')
+
+
+class TabStatusStore():
+
+    # show_tabs parameter from Session.sublime_session.
+    _show_tab_status = {}
+
+    @classmethod
+    def get_show_tab_status(store):
+        # get active window_id
+        window_id = sublime.active_window().id()
+
+        if(not window_id in store._show_tab_status):
+            store._show_tab_status[window_id] = None
+
+        return store._show_tab_status[window_id]
+
+    @classmethod
+    def toggle_show_tab_status(store):
+        # get active window_id
+        window_id = sublime.active_window().id()
+
+        # set show_tab_status.
+        store._show_tab_status[
+            window_id] = not store._show_tab_status[window_id]
+
+    @classmethod
+    def set_show_tab_status(store, status):
+        # get active window_id
+        window_id = sublime.active_window().id()
+
+        # set show_tab_status.
+        store._show_tab_status[window_id] = status
 
 
 class SidebarSeparator(TextCommand):
@@ -133,5 +187,5 @@ class SidebarSeparator(TextCommand):
     def hide_tab_bar(self):
 
         # controlling the tabs when the flag is true.
-        if(get_auto_hide_option()):
+        if(get_auto_hide_option() and TabStatusStore.get_show_tab_status()):
             sublime.active_window().run_command('toggle_tabs', 'sidebar_separator')
