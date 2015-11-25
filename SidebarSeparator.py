@@ -1,84 +1,128 @@
 import sublime
 import json
 import os.path
-import sys
 from sublime_plugin import TextCommand
 from sublime_plugin import EventListener
 
-TOGGLE_TABS = 'toggle_tabs'
+# shared by the entire plugins.
+settings = None
+config = None
+
+
+def plugin_loaded():
+
+    # update settings.
+    _update_settings()
+
+    # update config.
+    _update_config()
+
+    # add settings modified listener.
+    settings.add_on_change('reload', _update_settings)
+
+
+def _update_config():
+
+    def _load_config():
+
+        def _parse_json(self, config_file):
+            # parse json from config file.
+            opened_file = open(config_file, 'r', encoding="utf8")
+            return json.loads(opened_file.read(), strict=False)
+
+        path = sublime.packages_path().replace('Packages', '')
+
+        if(sublime.platform() == 'windows'):
+
+            # for windows.
+            config_files = (path + '\Local\Auto Save Session.sublime_session',
+                            path + '\Local\Session.sublime_session')
+        else:
+
+            # for mac/linux.
+            config_files = (path + '/Local/Auto Save Session.sublime_session',
+                            path + '/Local/Session.sublime_session')
+
+        # preferentially set automatic writing file.
+        if(os.path.isfile(config_files[0])):
+            config_file = config_files[0]
+        else:
+            config_file = config_files[1]
+
+        return _parse_json(config_file)
+
+    # use global definition.
+    global config
+
+    if(config is None):
+        config = _load_config()
+
+
+def _update_settings():
+
+    # use global definition.
+    global settings
+
+    # load settings value from setting file.
+    settings = sublime.load_settings('sidebar_separator.sublime-settings')
+
+
+def get_separate_value():
+
+    # use global definition.
+    global settings
+
+    # get separate value and create separater.
+    value = settings.get('separate_value', '-')
+    count = settings.get('separate_count', '100')
+
+    return value * count
+
+
+def get_auto_hide_option():
+
+    # use global definition.
+    global settings
+
+    # get auto_tab_hide option and return the flag.
+    auto_hide_flag = settings.get('auto_tab_hide', True)
+
+    return auto_hide_flag
+
+
+def get_tab_visibility_option():
+
+    # use global definition.
+    global config
+
+    return config['windows'][0]['show_tabs']
 
 
 class Listener(EventListener):
 
     def on_window_command(self, window, command, option):
         # toggle_tabs command except it does not control.
-        if(command != TOGGLE_TABS):
-            return
-
-        if(option == 'hide_tabs' and TabStatusStore.getTabCloseFlag()):
-            # set tab hide flag.
-            TabStatusStore.setShowTabStatus(False)
-        elif(not TabStatusStore.getTabCloseFlag()):
-            # set tab show/hide flag.
-            TabStatusStore.setShowTabStatus(
-                not TabStatusStore.getShowTabStatus())
-        else:
-            # force disable disable the tab control of the menu.
-            return ('None')
-
-
-class TabStatusStore():
-    # show_tabs parameter from Session.sublime_session.
-    _show_tab_status = {}
-
-    # auto tab closing flag.
-    _tab_close_flag = None
-
-    @staticmethod
-    def getActiveWindowId():
-        return sublime.active_window().id()
-
-    @classmethod
-    def getShowTabStatus(store):
-        # get active window_id
-        window_id = store.getActiveWindowId()
-
-        if(not window_id in store._show_tab_status):
-            store._show_tab_status[window_id] = None
-
-        return store._show_tab_status[window_id]
-
-    @classmethod
-    def setShowTabStatus(store, status):
-        # get active window_id
-        window_id = store.getActiveWindowId()
-
-        # set show_tab_status.
-        store._show_tab_status[window_id] = status
-
-    @classmethod
-    def getTabCloseFlag(store):
-        return store._tab_close_flag
-
-    @classmethod
-    def setTabCloseFlag(store, flag):
-        store._tab_close_flag = flag
+        print('コマンド：', command, '/オプション：', option,
+              '/ウインドウ：', window, '/セルフ：', self)
 
 
 class SidebarSeparator(TextCommand):
 
     def run(self, edit):
-        # get setting values from setting file.
-        setting_values = self.getSettingValues()
-
-        # set separate data.
-        separate_value = self.setSeparate(setting_values)
 
         # create separate file.
+        self.create_separater()
+
+        # auto tab hide.
+        self.hide_tab_bar()
+
+    def create_separater(self):
+
+         # create separate file.
         separate_file = sublime.active_window().new_file()
 
         # set buffer name.
-        separate_file.set_name(separate_value)
+        separate_file.set_name(get_separate_value())
 
         # set not save as separate file propertie.
         separate_file.set_scratch(True)
@@ -86,88 +130,8 @@ class SidebarSeparator(TextCommand):
         # set read only propertie.
         separate_file.set_read_only(True)
 
-        # set auto tab closing flag.
-        TabStatusStore.setTabCloseFlag(setting_values['auto_tab_hide'])
+    def hide_tab_bar(self):
 
-        # check auto hide option.
-        if(not TabStatusStore.getTabCloseFlag()):
-            return
-
-        # to determine the need for command execution
-        if(not self.checkShowTabStatus()):
-            return
-
-        # execute hide tabs.
-        self.hideTabBar(setting_values)
-
-    def getSettingValues(self):
-
-        # config files(user)
-        config_file = 'sidebar_separator.sublime-settings'
-
-        # get config value from setting file.
-        setting_values = {}
-        try:
-            settings = sublime.load_settings(config_file)
-
-            setting_values["separate_value"] = settings.get(
-                'separate_value', '-')
-            setting_values["separate_count"] = settings.get(
-                'separate_count', 100)
-            setting_values["auto_tab_hide"] = settings.get(
-                'auto_tab_hide', True)
-        except:
-            pass
-        return setting_values
-
-    def setSeparate(self, setting_values):
-        # set separate value
-        return setting_values["separate_value"] * setting_values["separate_count"]
-
-    def getJsonParameter(self):
-        # check setting file exist.
-        # Auto Save File or Other.
-        setting_file = self.checkSettingFileExists()
-
-        # get json file from setting file.
-        setting_data = self.loadSettingData(setting_file)
-
-        return setting_data['windows'][0]['show_tabs']
-
-    def checkShowTabStatus(self):
-        # check show_tabs parameter at global.
-        if (TabStatusStore.getShowTabStatus() is None):
-
-            # set show_tabs parameter from Session.sublime_session.
-            TabStatusStore.setShowTabStatus(self.getJsonParameter())
-
-        return TabStatusStore.getShowTabStatus()
-
-    def hideTabBar(self, setting_values):
-        # hide tabbar.
-        sublime.active_window().run_command(TOGGLE_TABS, 'hide_tabs')
-
-    def checkSettingFileExists(self):
-        # set path of setting file.
-        path = sublime.packages_path().replace('Packages', '')
-        if(sublime.platform() == 'windows'):
-            # for windows.
-            setting_files = (path + '\Local\Auto Save Session.sublime_session',
-                             path + '\Local\Session.sublime_session')
-        else:
-
-            # for mac/linux.
-            setting_files = (path + '/Local/Auto Save Session.sublime_session',
-                             path + '/Local/Session.sublime_session')
-
-        # check setting file exist.
-        if(os.path.isfile(setting_files[0])):
-            return setting_files[0]
-        elif(os.path.isfile(setting_files[1])):
-            return setting_files[1]
-        sys.exit
-
-    def loadSettingData(self, setting_file):
-        # load json from setting file.
-        return json.loads(
-            open(setting_file, 'r', encoding="utf8").read(), strict=False)
+        # controlling the tabs when the flag is true.
+        if(get_auto_hide_option()):
+            sublime.active_window().run_command('toggle_tabs', 'this_plugin')
