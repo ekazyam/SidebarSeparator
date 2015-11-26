@@ -98,28 +98,22 @@ class TabControlListener(EventListener):
             TabStatusStore.set_active_window_status()
 
         def _toggle_tabs(command, option):
-            def _check_auto_hide_tab_executable(option):
-                if(option == 'sidebar_separator' and get_auto_hide_option(
-                ) and TabStatusStore.get_show_tab_status()):
-                    return True
-                else:
-                    return False
-
-            # hide tab by this plugin's command.
-            if(_check_auto_hide_tab_executable(option)):
+            if(option == 'sidebar_separator' and get_auto_hide_option(
+            ) and TabStatusStore.get_show_tab_status()):
                 # set tab hide flag.
                 TabStatusStore.set_show_tab_status(False)
                 return True
-
-            # force keep closing tab status.
+            elif(not get_auto_hide_option()):
+                TabStatusStore.toggle_show_tab_status()
+                return True
             elif(get_auto_hide_option()):
-                return ('None')
+                return False
 
-        # toggle_tabs command except it does not control.
         if(command == 'toggle_tabs'):
-            return (_toggle_tabs(command, option))
+            if (not _toggle_tabs(command, option)):
+                return ('None')
         elif(command == 'new_window'):
-            return (_new_window())
+            _new_window()
 
 
 class TabStatusStore():
@@ -156,6 +150,14 @@ class TabStatusStore():
 
         # set show_tab_status.
         store._show_tab_status[window_id] = status
+
+    @classmethod
+    def toggle_show_tab_status(store):
+        # get active window_id
+        window_id = sublime.active_window().id()
+
+        store._show_tab_status[
+            window_id] = not store._show_tab_status[window_id]
 
 
 class SidebarSeparator(TextCommand):
