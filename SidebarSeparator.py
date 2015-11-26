@@ -94,25 +94,32 @@ def get_tab_visibility_option():
 class TabControlListener(EventListener):
 
     def on_window_command(self, window, command, option):
-        def _check_auto_hide_tab_executable(option):
-            if(option == 'sidebar_separator' and get_auto_hide_option(
-            ) and TabStatusStore.get_show_tab_status()):
+        def _new_window():
+            TabStatusStore.set_active_window_status()
+
+        def _toggle_tabs(command, option):
+            def _check_auto_hide_tab_executable(option):
+                if(option == 'sidebar_separator' and get_auto_hide_option(
+                ) and TabStatusStore.get_show_tab_status()):
+                    return True
+                else:
+                    return False
+
+            # hide tab by this plugin's command.
+            if(_check_auto_hide_tab_executable(option)):
+                # set tab hide flag.
+                TabStatusStore.set_show_tab_status(False)
                 return True
-            else:
-                return False
+
+            # force keep closing tab status.
+            elif(get_auto_hide_option()):
+                return ('None')
 
         # toggle_tabs command except it does not control.
-        if(command != 'toggle_tabs'):
-            return
-
-        # hide tab by this plugin's command.
-        if(_check_auto_hide_tab_executable(option)):
-            # set tab hide flag.
-            TabStatusStore.set_show_tab_status(False)
-
-        # force keep closing tab status.
-        elif(get_auto_hide_option()):
-            return ('None')
+        if(command == 'toggle_tabs'):
+            return (_toggle_tabs(command, option))
+        elif(command == 'new_window'):
+            return (_new_window())
 
 
 class TabStatusStore():
@@ -120,25 +127,27 @@ class TabStatusStore():
     # show_tabs parameter from Session.sublime_session.
     _show_tab_status = {}
 
+    # just before active window status.
+    _active_window_status = None
+
+    @classmethod
+    def set_active_window_status(store):
+        store._active_window_status = TabStatusStore.get_show_tab_status()
+
+    @classmethod
+    def get_active_window_status(store):
+        return store._active_window_status
+
     @classmethod
     def get_show_tab_status(store):
         # get active window_id
         window_id = sublime.active_window().id()
 
         if(not window_id in store._show_tab_status):
-            # TODO:前回のウインドウ開閉状態を保持する。
-            sotre._show_tab_status[window_id] = None
+            # set just before active window id.
+            store._show_tab_status[window_id] = store._active_window_status
 
         return store._show_tab_status[window_id]
-
-    @classmethod
-    def toggle_show_tab_status(store):
-        # get active window_id
-        window_id = sublime.active_window().id()
-
-        # set show_tab_status.
-        store._show_tab_status[
-            window_id] = not store._show_tab_status[window_id]
 
     @classmethod
     def set_show_tab_status(store, status):
