@@ -21,6 +21,7 @@ separate_count indicates the number of separate characters.
    // The number of separate characters.
    "separate_count": 100,
    // Forced hidden if tab that specifies the true.
+   // If true,show tabs / hide tabs menu of menu bar will be disablled.
    "auto_tab_hide": true,
 }
 
