@@ -10,7 +10,6 @@ config = None
 
 
 def plugin_loaded():
-
     # update settings.
     _update_settings()
 
@@ -22,9 +21,7 @@ def plugin_loaded():
 
 
 def _update_config():
-
     def _load_config():
-
         def _parse_json(config_file):
             # parse json from config file.
             opened_file = open(config_file, 'r', encoding="utf8")
@@ -33,12 +30,10 @@ def _update_config():
         path = sublime.packages_path().replace('Packages', '')
 
         if(sublime.platform() == 'windows'):
-
             # for windows.
             config_files = (path + '\Local\Auto Save Session.sublime_session',
                             path + '\Local\Session.sublime_session')
         else:
-
             # for mac/linux.
             config_files = (path + '/Local/Auto Save Session.sublime_session',
                             path + '/Local/Session.sublime_session')
@@ -61,7 +56,6 @@ def _update_config():
 
 
 def _update_settings():
-
     # use global definition.
     global settings
 
@@ -70,7 +64,6 @@ def _update_settings():
 
 
 def get_separate_value():
-
     # use global definition.
     global settings
 
@@ -82,7 +75,6 @@ def get_separate_value():
 
 
 def get_auto_hide_option():
-
     # use global definition.
     global settings
 
@@ -93,36 +85,32 @@ def get_auto_hide_option():
 
 
 def get_tab_visibility_option():
-
     # use global definition.
     global config
 
     return config['windows'][0]['show_tabs']
 
 
-class Listener(EventListener):
+class TabControlListener(EventListener):
 
     def on_window_command(self, window, command, option):
-
-        # toggle_tabs command except it does not control.
-        print('コマンド：', command, '/オプション：', option,
-              '/ウインドウ：', window, '/開閉状態：', TabStatusStore.get_show_tab_status())
+        def _check_auto_hide_tab_executable(option):
+            if(option == 'sidebar_separator' and get_auto_hide_option(
+            ) and TabStatusStore.get_show_tab_status()):
+                return True
+            else:
+                return False
 
         # toggle_tabs command except it does not control.
         if(command != 'toggle_tabs'):
             return
 
-        if(option == 'sidebar_separator' and get_auto_hide_option() and TabStatusStore.get_show_tab_status()):
-
+        # hide tab by this plugin's command.
+        if(_check_auto_hide_tab_executable(option)):
             # set tab hide flag.
             TabStatusStore.set_show_tab_status(False)
-        # toggle version.
-        # elif(not get_auto_hide_option()):
 
-            # toggle show/hide flag.
-            # TabStatusStore.set_show_tab_status(
-            # TabStatusStore.toggle_show_tab_status())
-        # force hide tab version.
+        # force keep closing tab status.
         elif(get_auto_hide_option()):
             return ('None')
 
@@ -138,7 +126,8 @@ class TabStatusStore():
         window_id = sublime.active_window().id()
 
         if(not window_id in store._show_tab_status):
-            store._show_tab_status[window_id] = None
+            # TODO:前回のウインドウ開閉状態を保持する。
+            sotre._show_tab_status[window_id] = None
 
         return store._show_tab_status[window_id]
 
@@ -163,7 +152,6 @@ class TabStatusStore():
 class SidebarSeparator(TextCommand):
 
     def run(self, edit):
-
         # create separate file.
         self.create_separater()
 
@@ -171,7 +159,6 @@ class SidebarSeparator(TextCommand):
         self.hide_tab_bar()
 
     def create_separater(self):
-
          # create separate file.
         separate_file = sublime.active_window().new_file()
 
@@ -185,7 +172,8 @@ class SidebarSeparator(TextCommand):
         separate_file.set_read_only(True)
 
     def hide_tab_bar(self):
-
         # controlling the tabs when the flag is true.
         if(get_auto_hide_option() and TabStatusStore.get_show_tab_status()):
-            sublime.active_window().run_command('toggle_tabs', 'sidebar_separator')
+
+            active_window = sublime.active_window()
+            active_window.run_command('toggle_tabs', 'sidebar_separator')
