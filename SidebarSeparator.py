@@ -108,6 +108,8 @@ class TabControlListener(EventListener):
                 return True
             elif(get_auto_hide_option()):
                 return False
+            else:
+                return False
 
         if(command == 'toggle_tabs'):
             if (not _toggle_tabs(command, option)):
