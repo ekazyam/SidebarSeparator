@@ -10,6 +10,9 @@ config = None
 
 
 def plugin_loaded():
+    # use global definition.
+    global settings
+
     # update settings.
     _update_settings()
 
@@ -69,7 +72,7 @@ def get_separate_value():
 
     # get separate value and create separater.
     value = settings.get('separate_value', '-')
-    count = settings.get('separate_count', '100')
+    count = settings.get('separate_count', 100)
 
     return value * count
 
