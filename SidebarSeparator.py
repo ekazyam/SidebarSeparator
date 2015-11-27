@@ -159,7 +159,7 @@ class TabStatusStore():
         window_id = sublime.active_window().id()
 
         store._show_tab_status[
-            window_id] = not store._show_tab_status[window_id]
+            window_id] = not store.get_show_tab_status()
 
 
 class SidebarSeparator(TextCommand):
