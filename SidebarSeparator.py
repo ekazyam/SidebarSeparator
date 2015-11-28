@@ -4,15 +4,8 @@ import os.path
 from sublime_plugin import TextCommand
 from sublime_plugin import EventListener
 
-# shared by the entire plugins.
-settings = None
-config = None
-
 
 def plugin_loaded():
-    # use global definition.
-    global settings
-
     # update settings.
     _update_settings()
 
@@ -20,7 +13,7 @@ def plugin_loaded():
     _update_config()
 
     # add settings modified listener.
-    settings.add_on_change('reload', _update_settings)
+    SettingStore.get_settings().add_on_change('reload', _update_settings)
 
 
 def _update_config():
@@ -49,48 +42,35 @@ def _update_config():
 
         return _parse_json(config_file)
 
-    # use global definition.
-    global config
-
-    if(config is None):
-        config = _load_config()
+    if(SettingStore.get_config() is None):
+        SettingStore.set_config(_load_config())
 
     TabStatusStore.set_show_tab_status(get_tab_visibility_option())
 
 
 def _update_settings():
-    # use global definition.
-    global settings
-
     # load settings value from setting file.
-    settings = sublime.load_settings('sidebar_separator.sublime-settings')
+    SettingStore.set_settings(sublime.load_settings(
+        'sidebar_separator.sublime-settings'))
 
 
 def get_separate_value():
-    # use global definition.
-    global settings
-
     # get separate value and create separater.
-    value = settings.get('separate_value', '-')
-    count = settings.get('separate_count', 100)
+    value = SettingStore.get_settings().get('separate_value', '-')
+    count = SettingStore.get_settings().get('separate_count', 100)
 
     return value * count
 
 
 def get_auto_hide_option():
-    # use global definition.
-    global settings
-
     # get auto_tab_hide option and return the flag.
-    auto_hide_flag = settings.get('auto_tab_hide', True)
+    auto_hide_flag = SettingStore.get_settings().get('auto_tab_hide', True)
 
     return auto_hide_flag
 
 
 def get_tab_visibility_option():
-    # use global definition.
-    global config
-
+    config = SettingStore.get_config()
     return config['windows'][0]['show_tabs']
 
 
@@ -124,29 +104,29 @@ class TabControlListener(EventListener):
 class TabStatusStore():
 
     # show_tabs parameter from Session.sublime_session.
-    _show_tab_status = {}
+    __show_tab_status = {}
 
     # just before active window status.
-    _active_window_status = None
+    __active_window_status = None
 
     @classmethod
     def set_active_window_status(store):
-        store._active_window_status = TabStatusStore.get_show_tab_status()
+        store.__active_window_status = TabStatusStore.get_show_tab_status()
 
     @classmethod
     def get_active_window_status(store):
-        return store._active_window_status
+        return store.__active_window_status
 
     @classmethod
     def get_show_tab_status(store):
         # get active window_id
         window_id = sublime.active_window().id()
 
-        if(not window_id in store._show_tab_status):
+        if(not window_id in store.__show_tab_status):
             # set just before active window id.
-            store._show_tab_status[window_id] = store._active_window_status
+            store.__show_tab_status[window_id] = store.__active_window_status
 
-        return store._show_tab_status[window_id]
+        return store.__show_tab_status[window_id]
 
     @classmethod
     def set_show_tab_status(store, status):
@@ -154,15 +134,37 @@ class TabStatusStore():
         window_id = sublime.active_window().id()
 
         # set show_tab_status.
-        store._show_tab_status[window_id] = status
+        store.__show_tab_status[window_id] = status
 
     @classmethod
     def toggle_show_tab_status(store):
         # get active window_id
         window_id = sublime.active_window().id()
 
-        store._show_tab_status[
+        store.__show_tab_status[
             window_id] = not store.get_show_tab_status()
+
+
+class SettingStore():
+    # shared by the entire plugins.
+    __settings = None
+    __config = None
+
+    @classmethod
+    def get_config(store):
+        return store.__config
+
+    @classmethod
+    def set_config(store, config):
+        store.__config = config
+
+    @classmethod
+    def get_settings(store):
+        return store.__settings
+
+    @classmethod
+    def set_settings(store, settings):
+        store.__settings = settings
 
 
 class SidebarSeparator(TextCommand):
