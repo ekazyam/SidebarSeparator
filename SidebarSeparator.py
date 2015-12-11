@@ -110,9 +110,11 @@ class SettingStore():
 
         return cls.__instance
 
-    def get_config(self):
+    @property
+    def config(self):
         return self.__config
 
+    @config.setter
     def set_config(self, config):
         self.__config = config
 
@@ -148,8 +150,8 @@ class SettingStore():
 
             return _parse_json(config_file)
 
-        if(SettingStore().get_config() is None):
-            SettingStore().set_config(_load_config())
+        if(SettingStore().config is None):
+            SettingStore().config = _load_config()
 
         TabStatusStore().set_show_tab_status(
             SettingStore().get_tab_visibility_option())
@@ -166,8 +168,7 @@ class SettingStore():
         return auto_hide_flag
 
     def get_tab_visibility_option(self):
-        config = self.get_config()
-        return config['windows'][0]['show_tabs']
+        return self.config['windows'][0]['show_tabs']
 
 
 class SidebarSeparator(TextCommand):
