@@ -21,7 +21,7 @@ class TabControlListener(EventListener):
 
     def on_window_command(self, window, command, option):
         def _new_window():
-            TabStatusStore().active_window_status = TabStatusStore().get_show_tab_status()
+            TabStatusStore().active_window_status = tab_st.get_show_tab_status()
 
         def _toggle_tabs(command, option):
             if(option == 'sidebar_separator' and SettingStore().get_auto_hide_option(
@@ -111,7 +111,8 @@ class SettingStore():
     def config(self):
         return self.__config
 
-    def set_config(self, config):
+    @config.setter
+    def config(self, config):
         self.__config = config
 
     @property
@@ -150,7 +151,7 @@ class SettingStore():
             return json.loads(opened_file.read(), strict=False)
 
         if(SettingStore().config is None):
-            SettingStore().set_config(_load_config())
+            SettingStore().config = _load_config()
 
         TabStatusStore().set_show_tab_status(
             SettingStore().get_tab_visibility_option())
