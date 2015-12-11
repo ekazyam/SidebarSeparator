@@ -21,7 +21,7 @@ class TabControlListener(EventListener):
 
     def on_window_command(self, window, command, option):
         def _new_window():
-            TabStatusStore().active_window_status = tab_st.get_show_tab_status()
+            TabStatusStore().active_window_status = TabStatusStore().get_show_tab_status()
 
         def _toggle_tabs(command, option):
             if(option == 'sidebar_separator' and SettingStore().get_auto_hide_option(
