@@ -68,9 +68,12 @@ class TabStatusStore():
     def active_window_status(self, status):
         self.__active_window_status = status
 
+    def get_active_window_id(self):
+        return sublime.active_window().id()
+
     def get_show_tab_status(self):
         # get active window_id
-        window_id = sublime.active_window().id()
+        window_id = self.get_active_window_id()
 
         if(not window_id in self.__show_tab_status):
             # set just before active window id.
@@ -79,18 +82,12 @@ class TabStatusStore():
         return self.__show_tab_status[window_id]
 
     def set_show_tab_status(self, status):
-        # get active window_id
-        window_id = sublime.active_window().id()
-
         # set show_tab_status.
-        self.__show_tab_status[window_id] = status
+        self.__show_tab_status[self.get_active_window_id()] = status
 
     def toggle_show_tab_status(self):
-        # get active window_id
-        window_id = sublime.active_window().id()
-
         self.__show_tab_status[
-            window_id] = not self.get_show_tab_status()
+            self.get_active_window_id()] = not self.get_show_tab_status()
 
 
 class SettingStore():
@@ -114,7 +111,6 @@ class SettingStore():
     def config(self):
         return self.__config
 
-    @config.setter
     def set_config(self, config):
         self.__config = config
 
@@ -128,10 +124,6 @@ class SettingStore():
 
     def update_config(self):
         def _load_config():
-            def _parse_json(config_file):
-                # parse json from config file.
-                opened_file = open(config_file, 'r', encoding="utf8")
-                return json.loads(opened_file.read(), strict=False)
 
             path = sublime.packages_path().replace('Packages', '')
 
@@ -152,8 +144,13 @@ class SettingStore():
 
             return _parse_json(config_file)
 
+        def _parse_json(config_file):
+            # parse json from config file.
+            opened_file = open(config_file, 'r', encoding="utf8")
+            return json.loads(opened_file.read(), strict=False)
+
         if(SettingStore().config is None):
-            SettingStore().config = _load_config()
+            SettingStore().set_config(_load_config())
 
         TabStatusStore().set_show_tab_status(
             SettingStore().get_tab_visibility_option())
@@ -165,9 +162,7 @@ class SettingStore():
 
     def get_auto_hide_option(self):
         # get auto_tab_hide option and return the flag.
-        auto_hide_flag = self.settings.get('auto_tab_hide', True)
-
-        return auto_hide_flag
+        return self.settings.get('auto_tab_hide', True)
 
     def get_tab_visibility_option(self):
         return self.config['windows'][0]['show_tabs']
@@ -199,8 +194,7 @@ class SidebarSeparator(TextCommand):
         # controlling the tabs when the flag is true.
         if(SettingStore().get_auto_hide_option() and TabStatusStore().get_show_tab_status()):
 
-            active_window = sublime.active_window()
-            active_window.run_command('toggle_tabs', 'sidebar_separator')
+            sublime.active_window().run_command('toggle_tabs', 'sidebar_separator')
 
     def get_separate_value(self):
         # get separate value and create separater.
