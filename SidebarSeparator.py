@@ -13,7 +13,7 @@ def plugin_loaded():
     SettingStore().update_config()
 
     # add settings modified listener.
-    SettingStore().get_settings().add_on_change(
+    SettingStore().settings.add_on_change(
         'reload', SettingStore().update_settings)
 
 
@@ -118,10 +118,12 @@ class SettingStore():
     def set_config(self, config):
         self.__config = config
 
-    def get_settings(self):
+    @property
+    def settings(self):
         return self.__settings
 
-    def set_settings(self, settings):
+    @settings.setter
+    def settings(self, settings):
         self.__settings = settings
 
     def update_config(self):
@@ -158,12 +160,12 @@ class SettingStore():
 
     def update_settings(self):
         # load settings value from setting file.
-        self.set_settings(sublime.load_settings(
-            'sidebar_separator.sublime-settings'))
+        self.settings = sublime.load_settings(
+            'sidebar_separator.sublime-settings')
 
     def get_auto_hide_option(self):
         # get auto_tab_hide option and return the flag.
-        auto_hide_flag = self.get_settings().get('auto_tab_hide', True)
+        auto_hide_flag = self.settings.get('auto_tab_hide', True)
 
         return auto_hide_flag
 
@@ -202,7 +204,7 @@ class SidebarSeparator(TextCommand):
 
     def get_separate_value(self):
         # get separate value and create separater.
-        value = SettingStore().get_settings().get('separate_value', '-')
-        count = SettingStore().get_settings().get('separate_count', 100)
+        value = SettingStore().settings.get('separate_value', '-')
+        count = SettingStore().settings.get('separate_count', 100)
 
         return value * count
