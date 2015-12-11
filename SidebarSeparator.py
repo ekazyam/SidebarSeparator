@@ -7,114 +7,128 @@ from sublime_plugin import EventListener
 
 def plugin_loaded():
     # update settings.
-    SettingStore.update_settings()
+    SettingStore().update_settings()
 
     # update config.
-    SettingStore.update_config()
+    SettingStore().update_config()
 
     # add settings modified listener.
-    SettingStore.get_settings().add_on_change(
-        'reload', SettingStore.update_settings)
+    SettingStore().settings.add_on_change(
+        'reload', SettingStore().update_settings)
 
 
 class TabControlListener(EventListener):
 
     def on_window_command(self, window, command, option):
-        def _new_window():
-            TabStatusStore.set_active_window_status()
-
-        def _toggle_tabs(command, option):
-            if(option == 'sidebar_separator' and SettingStore.get_auto_hide_option(
-            ) and TabStatusStore.get_show_tab_status()):
-                # set tab hide flag.
-                TabStatusStore.set_show_tab_status(False)
-                return True
-            elif(not SettingStore.get_auto_hide_option()):
-                TabStatusStore.toggle_show_tab_status()
-                return True
-            elif(SettingStore.get_auto_hide_option()):
-                return False
-            return False
 
         if(command == 'toggle_tabs'):
-            if (not _toggle_tabs(command, option)):
+            if (not self._toggle_tabs(command, option)):
                 return ('None')
         elif(command == 'new_window'):
-            _new_window()
+            self._new_window()
+
+    def _new_window(self):
+        TabStatusStore().active_window_status = TabStatusStore().show_tab_status
+
+    def _toggle_tabs(self, command, option):
+        if(option == 'sidebar_separator'
+                and SettingStore().get_auto_hide_option()
+                and TabStatusStore().show_tab_status):
+            # set tab hide flag.
+            TabStatusStore().show_tab_status = False
+            return True
+        elif(not SettingStore().get_auto_hide_option()):
+            TabStatusStore().toggle_show_tab_status()
+            return True
+        elif(SettingStore().get_auto_hide_option()):
+            return False
+        return False
 
 
 class TabStatusStore():
+    # singleton instance.
+    __instance = None
 
-    # show_tabs parameter from Session.sublime_session.
-    __show_tab_status = {}
+    def __new__(cls, *args, **kwargs):
+        if not cls.__instance:
+            cls.__instance = super(TabStatusStore, cls).__new__(
+                cls, *args, **kwargs)
 
-    # just before active window status.
-    __active_window_status = None
+            # show_tabs parameter from Session.sublime_session.
+            cls.__show_tab_status = {}
 
-    @classmethod
-    def set_active_window_status(store):
-        store.__active_window_status = TabStatusStore.get_show_tab_status()
+            # just before active window status.
+            cls.__active_window_status = None
 
-    @classmethod
-    def get_active_window_status(store):
-        return store.__active_window_status
+        return cls.__instance
 
-    @classmethod
-    def get_show_tab_status(store):
+    @property
+    def active_window_status(self):
+        return self.__active_window_status
+
+    @active_window_status.setter
+    def active_window_status(self, status):
+        self.__active_window_status = status
+
+    @property
+    def show_tab_status(self):
         # get active window_id
-        window_id = sublime.active_window().id()
+        window_id = self._get_active_window_id()
 
-        if(not window_id in store.__show_tab_status):
+        if(not window_id in self.__show_tab_status):
             # set just before active window id.
-            store.__show_tab_status[window_id] = store.__active_window_status
+            self.__show_tab_status[window_id] = self.__active_window_status
 
-        return store.__show_tab_status[window_id]
+        return self.__show_tab_status[window_id]
 
-    @classmethod
-    def set_show_tab_status(store, status):
-        # get active window_id
-        window_id = sublime.active_window().id()
-
+    @show_tab_status.setter
+    def show_tab_status(self, status):
         # set show_tab_status.
-        store.__show_tab_status[window_id] = status
+        self.__show_tab_status[self._get_active_window_id()] = status
 
-    @classmethod
-    def toggle_show_tab_status(store):
-        # get active window_id
-        window_id = sublime.active_window().id()
+    def toggle_show_tab_status(self):
+        self.__show_tab_status[
+            self._get_active_window_id()] = not self.show_tab_status
 
-        store.__show_tab_status[
-            window_id] = not store.get_show_tab_status()
+    def _get_active_window_id(self):
+        return sublime.active_window().id()
 
 
 class SettingStore():
-    # shared by the entire plugins.
-    __settings = None
-    __config = None
+    # singleton instance.
+    __instance = None
 
-    @classmethod
-    def get_config(store):
-        return store.__config
+    def __new__(cls, *args, **kwargs):
+        if not cls.__instance:
+            cls.__instance = super(SettingStore, cls).__new__(
+                cls, *args, **kwargs)
 
-    @classmethod
-    def set_config(store, config):
-        store.__config = config
+            # initial value of the setting file.
+            cls.__settings = None
 
-    @classmethod
-    def get_settings(store):
-        return store.__settings
+            # initial value of the configuration file.
+            cls.__config = None
 
-    @classmethod
-    def set_settings(store, settings):
-        store.__settings = settings
+        return cls.__instance
 
-    @classmethod
-    def update_config(store):
+    @property
+    def config(self):
+        return self.__config
+
+    @config.setter
+    def config(self, config):
+        self.__config = config
+
+    @property
+    def settings(self):
+        return self.__settings
+
+    @settings.setter
+    def settings(self, settings):
+        self.__settings = settings
+
+    def update_config(self):
         def _load_config():
-            def _parse_json(config_file):
-                # parse json from config file.
-                opened_file = open(config_file, 'r', encoding="utf8")
-                return json.loads(opened_file.read(), strict=False)
 
             path = sublime.packages_path().replace('Packages', '')
 
@@ -135,29 +149,27 @@ class SettingStore():
 
             return _parse_json(config_file)
 
-        if(SettingStore.get_config() is None):
-            SettingStore.set_config(_load_config())
+        def _parse_json(config_file):
+            # parse json from config file.
+            opened_file = open(config_file, 'r', encoding="utf8")
+            return json.loads(opened_file.read(), strict=False)
 
-        TabStatusStore.set_show_tab_status(
-            SettingStore.get_tab_visibility_option())
+        if(SettingStore().config is None):
+            SettingStore().config = _load_config()
 
-    @classmethod
-    def update_settings(store):
+        TabStatusStore().show_tab_status = SettingStore().get_tab_visibility_option()
+
+    def update_settings(self):
         # load settings value from setting file.
-        SettingStore.set_settings(sublime.load_settings(
-            'sidebar_separator.sublime-settings'))
+        self.settings = sublime.load_settings(
+            'sidebar_separator.sublime-settings')
 
-    @classmethod
-    def get_auto_hide_option(store):
+    def get_auto_hide_option(self):
         # get auto_tab_hide option and return the flag.
-        auto_hide_flag = SettingStore.get_settings().get('auto_tab_hide', True)
+        return self.settings.get('auto_tab_hide', True)
 
-        return auto_hide_flag
-
-    @classmethod
-    def get_tab_visibility_option(store):
-        config = SettingStore.get_config()
-        return config['windows'][0]['show_tabs']
+    def get_tab_visibility_option(self):
+        return self.config['windows'][0]['show_tabs']
 
 
 class SidebarSeparator(TextCommand):
@@ -184,14 +196,13 @@ class SidebarSeparator(TextCommand):
 
     def hide_tab_bar(self):
         # controlling the tabs when the flag is true.
-        if(SettingStore.get_auto_hide_option() and TabStatusStore.get_show_tab_status()):
+        if(SettingStore().get_auto_hide_option() and TabStatusStore().show_tab_status):
 
-            active_window = sublime.active_window()
-            active_window.run_command('toggle_tabs', 'sidebar_separator')
+            sublime.active_window().run_command('toggle_tabs', 'sidebar_separator')
 
     def get_separate_value(self):
         # get separate value and create separater.
-        value = SettingStore.get_settings().get('separate_value', '-')
-        count = SettingStore.get_settings().get('separate_count', 100)
+        value = SettingStore().settings.get('separate_value', '-')
+        count = SettingStore().settings.get('separate_count', 100)
 
         return value * count
