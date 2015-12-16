@@ -21,26 +21,26 @@ class TabControlListener(EventListener):
 
     def on_window_command(self, window, command, option):
 
-        if(command == 'toggle_tabs'):
-            if (not self._toggle_tabs(command, option)):
-                return ('None')
-        elif(command == 'new_window'):
+        if (command == 'toggle_tabs'
+                and not self._toggle_tabs(command, option)):
+            return ('None')
+        elif command == 'new_window':
             self._new_window()
 
     def _new_window(self):
         TabStatusStore().active_window_status = TabStatusStore().show_tab_status
 
     def _toggle_tabs(self, command, option):
-        if(option == 'sidebar_separator'
+        if (option == 'sidebar_separator'
                 and SettingStore().get_auto_hide_option()
                 and TabStatusStore().show_tab_status):
             # set tab hide flag.
             TabStatusStore().show_tab_status = False
             return True
-        elif(not SettingStore().get_auto_hide_option()):
+        elif not SettingStore().get_auto_hide_option():
             TabStatusStore().toggle_show_tab_status()
             return True
-        elif(SettingStore().get_auto_hide_option()):
+        elif SettingStore().get_auto_hide_option():
             return False
         return False
 
@@ -75,7 +75,7 @@ class TabStatusStore():
         # get active window_id
         window_id = self._get_active_window_id()
 
-        if(not window_id in self.__show_tab_status):
+        if not window_id in self.__show_tab_status:
             # set just before active window id.
             self.__show_tab_status[window_id] = self.__active_window_status
 
@@ -132,7 +132,7 @@ class SettingStore():
 
             path = sublime.packages_path().replace('Packages', '')
 
-            if(sublime.platform() == 'windows'):
+            if sublime.platform() == 'windows':
                 # for windows.
                 config_files = (path + '\Local\Auto Save Session.sublime_session',
                                 path + '\Local\Session.sublime_session')
@@ -142,7 +142,7 @@ class SettingStore():
                                 path + '/Local/Session.sublime_session')
 
             # preferentially set automatic writing file.
-            if(os.path.isfile(config_files[0])):
+            if os.path.isfile(config_files[0]):
                 config_file = config_files[0]
             else:
                 config_file = config_files[1]
@@ -154,7 +154,7 @@ class SettingStore():
             opened_file = open(config_file, 'r', encoding="utf8")
             return json.loads(opened_file.read(), strict=False)
 
-        if(SettingStore().config is None):
+        if SettingStore().config is None:
             SettingStore().config = _load_config()
 
         TabStatusStore().show_tab_status = SettingStore().get_tab_visibility_option()
@@ -165,10 +165,11 @@ class SettingStore():
             'sidebar_separator.sublime-settings')
 
     def get_auto_hide_option(self):
-        # get auto_tab_hide option and return the flag.
+        # return the hide option flag.
         return self.settings.get('auto_tab_hide', True)
 
     def get_tab_visibility_option(self):
+        # return the show_tabs option.
         return self.config['windows'][0]['show_tabs']
 
 
@@ -196,7 +197,8 @@ class SidebarSeparator(TextCommand):
 
     def hide_tab_bar(self):
         # controlling the tabs when the flag is true.
-        if(SettingStore().get_auto_hide_option() and TabStatusStore().show_tab_status):
+        if (SettingStore().get_auto_hide_option()
+                and TabStatusStore().show_tab_status):
 
             sublime.active_window().run_command('toggle_tabs', 'sidebar_separator')
 
