@@ -132,22 +132,17 @@ class SettingStore():
 
             path = sublime.packages_path().replace('Packages', '')
 
-            if sublime.platform() == 'windows':
-                # for windows.
-                config_files = (path + '\Local\Auto Save Session.sublime_session',
-                                path + '\Local\Session.sublime_session')
-            else:
-                # for mac/linux.
-                config_files = (path + '/Local/Auto Save Session.sublime_session',
-                                path + '/Local/Session.sublime_session')
+            CONFIG_AUTO = os.path.join(
+                os.sep, path, 'Local', 'Auto Save Session.sublime_session')
+            CONFIG_SYS = os.path.join(
+                os.sep, path, 'Local', 'Session.sublime_session')
 
-            # preferentially set automatic writing file.
-            if os.path.isfile(config_files[0]):
-                config_file = config_files[0]
+            # read preferentially with automatic writing file.
+            # get the latest status.
+            if os.path.isfile(CONFIG_AUTO):
+                return _parse_json(CONFIG_AUTO)
             else:
-                config_file = config_files[1]
-
-            return _parse_json(config_file)
+                return _parse_json(CONFIG_SYS)
 
         def _parse_json(config_file):
             # parse json from config file.
