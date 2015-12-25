@@ -1,32 +1,40 @@
-Add Separater File in Open Files List
+Add Separator to Open Files List in Sidebar
 =====================================================
-Add an empty file to open files list.
-It'll add a hyphen in the standard.
+
+Adds a customizable separator to the open files list in Sublime Text sidebar. 
 
 ![add separate image](./view.png "add separate image.")
 
-Usage
+How to use
 =====
-Press <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd> or select `Add Separate` in the right-click menu on folders in the sidebar.
 
-Config
+**To add a separator**, press <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd> (in Windows or OS X) or select `Add Separate` in the right-click menu of sidebar folders.
+
+**To remove a separator**, click `X` to the left of this separator. The same way as you would close any file.
+
+Settings
 =====
-separate value indicates the character to be displayed as a separator.
-separate_count indicates the number of separate characters.
+* `separate_value`: a character to be displayed as a separator (default: `-`);
+* `separate_count`: number of separate characters (default: `100`).
+
 ~~~
 
 {
-   // Designation of separate character.
+   // Character used as list separator
    "separate_value": "-",
-   // The number of separate characters.
+   
+   // Number of separating characters
    "separate_count": 100,
-   // Forced hidden if tab that specifies the true.
-   // If true,show tabs / hide tabs menu of menu bar will be disablled.
+   
+   // If true, Sublime Text would hide tabs when you add a separator
+   // To return tabs, choose View > Show Tabs in menu
    "auto_tab_hide": true,
 }
 
 ~~~
 
+To edit these settings, open `Preferences > Package Settings > SidebarSeparator > Settings - User`.  
+
 License
 ====
-This software is released under the MIT License, see LICENSE.
+This software is released under the MIT License, see [LICENSE](https://github.com/ekazyam/SidebarSeparator/blob/master/LICENSE).
