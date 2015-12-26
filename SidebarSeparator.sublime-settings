@@ -1,8 +1,11 @@
 {
-   // Designation of separate character.
-   "separate_value": "-",
-   // The number of separate characters.
-   "separate_count": 100,
-   // Forced hidden if tab that specifies the true.
-   "auto_tab_hide": true,
+	// Character used as list separator
+	"separate_value": "-",
+
+	// Number of separating characters
+	"separate_count": 100,
+
+	// If true, Sublime Text would hide tabs when you add a separator
+	// To return tabs, choose View > Show Tabs in menu
+	"auto_tab_hide": true,
 }
