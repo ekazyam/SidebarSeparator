@@ -161,7 +161,7 @@ class SettingStore():
 
     def get_auto_hide_option(self):
         # return the hide option flag.
-        return self.settings.get('auto_tab_hide', True)
+        return self.settings.get('auto_tab_hide', False)
 
     def get_tab_visibility_option(self):
         # return the show_tabs option.

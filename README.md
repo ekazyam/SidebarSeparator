@@ -28,7 +28,8 @@ Settings
    
    // If true, Sublime Text would hide tabs when you add a separator
    // To return tabs, choose View > Show Tabs in menu
-   "auto_tab_hide": true,
+   // Please enable only if you want to only to the management of the sidebar
+   "auto_tab_hide": false,
 }
 
 ~~~
